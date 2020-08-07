@@ -148,7 +148,8 @@ int test_vsync(void) {
     } else if (average > 115 && average < 125) {
         SDL_GL_SetSwapInterval(4);
     } else {
-        vsync_enabled = 0;
+        SDL_GL_SetSwapInterval(1);
+        //vsync_enabled = 0;
     }
 }
 

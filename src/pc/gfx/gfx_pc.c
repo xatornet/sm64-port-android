@@ -1637,6 +1637,14 @@ void gfx_run(Gfx *commands) {
     }
     dropped_frame = false;
     
+#ifdef __ANDROID__
+    //This shouldn't be like this! This assumes a 60hz vsync. TODO Figure out why half-vsync doesn't work.
+    gfx_rapi->start_frame();
+    gfx_run_dl(commands);
+    gfx_flush();
+    gfx_rapi->end_frame();
+    gfx_wapi->swap_buffers_begin();
+#endif
     double t0 = gfx_wapi->get_time();
     gfx_rapi->start_frame();
     gfx_run_dl(commands);
