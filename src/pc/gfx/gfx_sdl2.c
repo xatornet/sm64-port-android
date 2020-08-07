@@ -171,6 +171,9 @@ static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {
         set_fullscreen(true, false);
     }
 
+#ifdef __ANDROID__
+    set_fullscreen(true, false);
+#endif
     SDL_GL_CreateContext(wnd);
 
     SDL_GL_SetSwapInterval(1);
