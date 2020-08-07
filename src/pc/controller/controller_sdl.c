@@ -1,4 +1,4 @@
-#if !defined(_WIN32) && !defined(_WIN64)
+#if !defined(_WIN32) && !defined(_WIN64) && !defined(__ANDROID__) //Temporarily removed until I add it
 
 #include <stdio.h>
 #include <stdint.h>

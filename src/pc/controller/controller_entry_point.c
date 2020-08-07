@@ -8,8 +8,8 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include "controller_xinput.h"
-#else
-#include "controller_sdl.h"
+//#else
+//#include "controller_sdl.h"
 #endif
 
 #if defined(__linux__) && !defined(__ANDROID__)
@@ -20,8 +20,8 @@ static struct ControllerAPI *controller_implementations[] = {
     &controller_recorded_tas,
 #if defined(_WIN32) || defined(_WIN64)
     &controller_xinput,
-#else
-    &controller_sdl,
+//#else
+//    &controller_sdl,
 #endif
 #if defined(__linux__) && !defined(__ANDROID__)
     &controller_wup,
