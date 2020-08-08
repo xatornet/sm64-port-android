@@ -187,7 +187,7 @@ void main_func(void) {
         audio_api = &audio_alsa;
     }
 #endif
-#ifdef TARGET_WEB
+#if defined(TARGET_WEB) || defined(__ANDROID__)
     if (audio_api == NULL && audio_sdl.init()) {
         audio_api = &audio_sdl;
     }

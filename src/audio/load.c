@@ -577,7 +577,6 @@ struct AudioBank *bank_load_immediate(s32 bankId, s32 arg1) {
     numInstruments = buf[0];
     numDrums = buf[1];
     audio_dma_copy_immediate((uintptr_t)(ctlData + 0x10), ret, alloc);
-    return NULL; //idk why but it's broken after this on android TODO figure it out!
     patch_audio_bank(ret, gAlTbl->seqArray[bankId].offset, numInstruments, numDrums);
     gCtlEntries[bankId].numInstruments = (u8) numInstruments;
     gCtlEntries[bankId].numDrums = (u8) numDrums;
