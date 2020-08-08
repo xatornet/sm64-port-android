@@ -1,3 +1,6 @@
+# Super Mario 64 Android Port
+If you want to compile Super Mario 64 for Android you'll probably want to clone [this repo](https://github.com/VDavid003/sm64-port-android-base) instead!
+
 # Super Mario 64 Port
 
 - This repo contains a full decompilation of Super Mario 64 (J), (U), and (E) with minor exceptions in the audio subsystem.
