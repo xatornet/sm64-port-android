@@ -12,15 +12,6 @@ SDL_PATH := ../SDL
 
 # Version of the game to build
 VERSION ?= us
-# Graphics microcode used
-GRUCODE ?= f3d_old
-
-NON_MATCHING := 1
-GRUCODE := f3dex2e
-TARGET_WINDOWS := 0
-TARGET_LINUX := 1
-
-ENABLE_OPENGL := 1
 
 ifeq ($(VERSION),jp)
   VERSION_DEF := VERSION_JP
