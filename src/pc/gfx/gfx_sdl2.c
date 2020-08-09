@@ -24,6 +24,10 @@
 
 #define GFX_API_NAME "SDL2 - OpenGL"
 
+#ifdef __ANDROID__
+extern int render_multiplier;
+#endif
+
 static SDL_Window *wnd;
 static int inverted_scancode_table[512];
 static int vsync_enabled = 0;
@@ -139,6 +143,7 @@ int test_vsync(void) {
     float average = 4.0 * 1000.0 / (end - start);
 
     vsync_enabled = 1;
+#ifndef __ANDROID__
     if (average > 27 && average < 33) {
         SDL_GL_SetSwapInterval(1);
     } else if (average > 57 && average < 63) {
@@ -148,9 +153,17 @@ int test_vsync(void) {
     } else if (average > 115 && average < 125) {
         SDL_GL_SetSwapInterval(4);
     } else {
-        SDL_GL_SetSwapInterval(1);
-        //vsync_enabled = 0;
+        vsync_enabled = 0;
     }
+#else
+    /*Android's vsync seems finicky but timer based sync seems unusable too.
+     * I think vsync does kind of work but not half-vsync and stuff like that.
+     * Let's try to render multiple times if neccessary to lower the framerate.
+     * I don't think this is a great solution but it works.*/
+    render_multiplier = (average + 15) / 30;
+    if (render_multiplier == 0)
+        render_multiplier = 1;
+#endif
 }
 
 static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {

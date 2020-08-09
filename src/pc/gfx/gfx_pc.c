@@ -38,6 +38,10 @@
 #define MAX_LIGHTS 2
 #define MAX_VERTICES 64
 
+#ifdef __ANDROID__
+int render_multiplier;
+#endif
+
 struct RGBA {
     uint8_t r, g, b, a;
 };
@@ -1638,13 +1642,17 @@ void gfx_run(Gfx *commands) {
     dropped_frame = false;
     
 #ifdef __ANDROID__
-    //This shouldn't be like this! This assumes a 60hz vsync. TODO Figure out why half-vsync doesn't work.
-    gfx_rapi->start_frame();
-    gfx_run_dl(commands);
-    gfx_flush();
-    gfx_rapi->end_frame();
-    gfx_wapi->swap_buffers_begin();
-#endif
+    for (int i = 0; i < render_multiplier; i++) {
+        double t0 = gfx_wapi->get_time();
+        gfx_rapi->start_frame();
+        gfx_run_dl(commands);
+        gfx_flush();
+        double t1 = gfx_wapi->get_time();
+        //printf("Process %f %f\n", t1, t1 - t0);
+        gfx_rapi->end_frame();
+        gfx_wapi->swap_buffers_begin();
+    }
+#else
     double t0 = gfx_wapi->get_time();
     gfx_rapi->start_frame();
     gfx_run_dl(commands);
@@ -1653,6 +1661,7 @@ void gfx_run(Gfx *commands) {
     //printf("Process %f %f\n", t1, t1 - t0);
     gfx_rapi->end_frame();
     gfx_wapi->swap_buffers_begin();
+#endif
 }
 
 void gfx_end_frame(void) {
