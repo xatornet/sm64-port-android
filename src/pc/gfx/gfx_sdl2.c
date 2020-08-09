@@ -42,6 +42,10 @@
 # define FRAMERATE 30
 #endif
 
+#ifdef __ANDROID__
+extern int render_multiplier;
+#endif
+
 static const Uint32 FRAME_TIME = 1000 / FRAMERATE;
 
 static SDL_Window *wnd;
@@ -144,6 +148,33 @@ static void gfx_sdl_reset_dimension_and_pos(void) {
     SDL_GL_SetSwapInterval(configWindow.vsync); // in case vsync changed
 }
 
+void test_vsync(void) {
+#ifdef __ANDROID__
+    for (int i = 0; i < 8; ++i)
+        SDL_GL_SwapWindow(wnd);
+
+    Uint32 start = SDL_GetTicks();
+    SDL_GL_SwapWindow(wnd);
+    SDL_GL_SwapWindow(wnd);
+    SDL_GL_SwapWindow(wnd);
+    SDL_GL_SwapWindow(wnd);
+    Uint32 end = SDL_GetTicks();
+
+    const float average = 4.0 * 1000.0 / (end - start);
+
+    /*Android's vsync seems finicky but timer based sync seems unusable too.
+     * I think vsync does kind of work but not half-vsync and stuff like that.
+     * Let's try to render multiple times if neccessary to lower the framerate.
+     * I don't think this is a great solution but it works.
+     * On SGI models, turning vsync off will help with framerate, but the best is 60fps patch.
+     * The actual solution would be to render or copy the buffer to a texture
+     * and then render that to the screen.*/
+    render_multiplier = (average + 15) / 30;
+    if (render_multiplier == 0)
+        render_multiplier = 1;
+#endif
+}
+
 static void gfx_sdl_init(const char *window_title) {
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -171,6 +202,7 @@ static void gfx_sdl_init(const char *window_title) {
     );
     ctx = SDL_GL_CreateContext(wnd);
 
+    test_vsync();
     SDL_GL_SetSwapInterval(configWindow.vsync);
 
     gfx_sdl_set_fullscreen();
