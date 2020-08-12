@@ -169,6 +169,8 @@ int test_vsync(void) {
 static void gfx_sdl_init(const char *game_name, bool start_in_fullscreen) {
     SDL_Init(SDL_INIT_VIDEO);
 
+    SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
