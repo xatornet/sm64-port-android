@@ -26,6 +26,7 @@
 #include "audio/audio_null.h"
 
 #include "controller/controller_keyboard.h"
+#include "controller/controller_touchscreen.h"
 
 #include "configfile.h"
 
@@ -171,7 +172,10 @@ void main_func(void) {
     
     wm_api->set_fullscreen_changed_callback(on_fullscreen_changed);
     wm_api->set_keyboard_callbacks(keyboard_on_key_down, keyboard_on_key_up, keyboard_on_all_keys_up);
-    
+#ifdef TOUCH_CONTROLS
+    wm_api->set_touchscreen_callbacks((void *)touch_down, (void *)touch_motion, (void *)touch_up);
+#endif
+
 #if HAVE_WASAPI
     if (audio_api == NULL && audio_wasapi.init()) {
         audio_api = &audio_wasapi;

@@ -325,6 +325,10 @@ static void gfx_dxgi_set_keyboard_callbacks(bool (*on_key_down)(int scancode), b
     dxgi.on_all_keys_up = on_all_keys_up;
 }
 
+static void gfx_dxgi_set_touchscreen_callbacks(void (*down)(void* event), void (*motion)(void* event), void (*up)(void* event)) {
+	//Not implemented yet
+}
+
 static void gfx_dxgi_main_loop(void (*run_one_game_iter)(void)) {
     dxgi.run_one_game_iter = run_one_game_iter;
 
@@ -600,6 +604,7 @@ void ThrowIfFailed(HRESULT res, HWND h_wnd, const char *message) {
 struct GfxWindowManagerAPI gfx_dxgi_api = {
     gfx_dxgi_init,
     gfx_dxgi_set_keyboard_callbacks,
+    gfx_dxgi_set_touchscreen_callbacks,
     gfx_dxgi_set_fullscreen_changed_callback,
     gfx_dxgi_set_fullscreen,
     gfx_dxgi_main_loop,

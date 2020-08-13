@@ -5,6 +5,7 @@
 
 #include "controller_recorded_tas.h"
 #include "controller_keyboard.h"
+#include "controller_touchscreen.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include "controller_xinput.h"
@@ -27,6 +28,9 @@ static struct ControllerAPI *controller_implementations[] = {
     &controller_wup,
 #endif
     &controller_keyboard,
+#ifdef TOUCH_CONTROLS
+    &controller_touchscreen,
+#endif
 };
 
 s32 osContInit(UNUSED OSMesgQueue *mq, u8 *controllerBits, UNUSED OSContStatus *status) {

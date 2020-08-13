@@ -397,6 +397,10 @@ static void gfx_glx_set_keyboard_callbacks(bool (*on_key_down)(int scancode), bo
     glx.on_all_keys_up = on_all_keys_up;
 }
 
+static void gfx_glx_set_touchscreen_callbacks(void (*down)(void* event), void (*motion)(void* event), void (*up)(void* event)) {
+	//Not implemented yet
+}
+
 static void gfx_glx_main_loop(void (*run_one_game_iter)(void)) {
     while (1) {
         run_one_game_iter();
@@ -599,6 +603,7 @@ static double gfx_glx_get_time(void) {
 struct GfxWindowManagerAPI gfx_glx = {
     gfx_glx_init,
     gfx_glx_set_keyboard_callbacks,
+    gfx_glx_set_touchscreen_callbacks,
     gfx_glx_set_fullscreen_changed_callback,
     gfx_glx_set_fullscreen,
     gfx_glx_main_loop,
