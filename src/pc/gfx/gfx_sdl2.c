@@ -226,6 +226,7 @@ static void gfx_sdl_onkeyup(int scancode) {
         kb_key_up(translate_scancode(scancode));
 }
 
+#ifdef TOUCH_CONTROLS
 static void gfx_sdl_fingerdown(SDL_TouchFingerEvent sdl_event) {
     struct TouchEvent event;
     event.x = sdl_event.x;
@@ -255,6 +256,7 @@ static void gfx_sdl_fingerup(SDL_TouchFingerEvent sdl_event) {
         touch_up_callback((void*)&event);
     }
 }
+#endif
 
 static void gfx_sdl_handle_events(void) {
     SDL_Event event;
@@ -269,6 +271,7 @@ static void gfx_sdl_handle_events(void) {
                 gfx_sdl_onkeyup(event.key.keysym.scancode);
                 break;
 #endif
+#ifdef TOUCH_CONTROLS
 	    case SDL_FINGERDOWN:
                 gfx_sdl_fingerdown(event.tfinger);
                 break;
@@ -278,6 +281,7 @@ static void gfx_sdl_handle_events(void) {
 	    case SDL_FINGERUP:
                 gfx_sdl_fingerup(event.tfinger);
                 break;
+#endif
             case SDL_WINDOWEVENT: // TODO: Check if this makes sense to be included in the Web build
                 if (!IS_FULLSCREEN()) {
                     switch (event.window.event) {
