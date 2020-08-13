@@ -33,6 +33,7 @@
 #include "../cliopts.h"
 
 #include "src/pc/controller/controller_keyboard.h"
+#include "src/pc/controller/controller_touchscreen.h"
 
 // TODO: figure out if this shit even works
 #ifdef VERSION_EU
@@ -50,6 +51,9 @@ static int inverted_scancode_table[512];
 static kb_callback_t kb_key_down = NULL;
 static kb_callback_t kb_key_up = NULL;
 static void (*kb_all_keys_up)(void) = NULL;
+static void (*touch_down_callback)(void* event);
+static void (*touch_motion_callback)(void* event);
+static void (*touch_up_callback)(void* event);
 
 const SDL_Scancode windows_scancode_table[] = {
   /*  0                        1                            2                         3                            4                     5                            6                            7  */
@@ -222,6 +226,36 @@ static void gfx_sdl_onkeyup(int scancode) {
         kb_key_up(translate_scancode(scancode));
 }
 
+static void gfx_sdl_fingerdown(SDL_TouchFingerEvent sdl_event) {
+    struct TouchEvent event;
+    event.x = sdl_event.x;
+    event.y = sdl_event.y;
+    event.touchID = sdl_event.fingerId + 1;
+    if (touch_down_callback != NULL) {
+        touch_down_callback((void*)&event);
+    }
+}
+
+static void gfx_sdl_fingermotion(SDL_TouchFingerEvent sdl_event) {
+    struct TouchEvent event;
+    event.x = sdl_event.x;
+    event.y = sdl_event.y;
+    event.touchID = sdl_event.fingerId + 1;
+    if (touch_motion_callback != NULL) {
+        touch_motion_callback((void*)&event);
+    }
+}
+
+static void gfx_sdl_fingerup(SDL_TouchFingerEvent sdl_event) {
+    struct TouchEvent event;
+    event.x = sdl_event.x;
+    event.y = sdl_event.y;
+    event.touchID = sdl_event.fingerId + 1;
+    if (touch_up_callback != NULL) {
+        touch_up_callback((void*)&event);
+    }
+}
+
 static void gfx_sdl_handle_events(void) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -235,6 +269,15 @@ static void gfx_sdl_handle_events(void) {
                 gfx_sdl_onkeyup(event.key.keysym.scancode);
                 break;
 #endif
+	    case SDL_FINGERDOWN:
+                gfx_sdl_fingerdown(event.tfinger);
+                break;
+	    case SDL_FINGERMOTION:
+                gfx_sdl_fingermotion(event.tfinger);
+                break;
+	    case SDL_FINGERUP:
+                gfx_sdl_fingerup(event.tfinger);
+                break;
             case SDL_WINDOWEVENT: // TODO: Check if this makes sense to be included in the Web build
                 if (!IS_FULLSCREEN()) {
                     switch (event.window.event) {
@@ -270,6 +313,12 @@ static void gfx_sdl_set_keyboard_callbacks(kb_callback_t on_key_down, kb_callbac
     kb_all_keys_up = on_all_keys_up;
 }
 
+static void gfx_sdl_set_touchscreen_callbacks(void (*down)(void* event), void (*motion)(void* event), void (*up)(void* event)) {
+    touch_down_callback = down;
+    touch_motion_callback = motion;
+    touch_up_callback = up;
+}
+
 static bool gfx_sdl_start_frame(void) {
     return true;
 }
@@ -297,6 +346,7 @@ static void gfx_sdl_shutdown(void) {
 struct GfxWindowManagerAPI gfx_sdl = {
     gfx_sdl_init,
     gfx_sdl_set_keyboard_callbacks,
+    gfx_sdl_set_touchscreen_callbacks,
     gfx_sdl_main_loop,
     gfx_sdl_get_dimensions,
     gfx_sdl_handle_events,
