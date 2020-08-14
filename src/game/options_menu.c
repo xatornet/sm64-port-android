@@ -82,6 +82,7 @@ static const u8 optsVideoStr[][32] = {
     { TEXT_OPT_HUD },
     { TEXT_OPT_THREEPT },
     { TEXT_OPT_APPLY },
+    { TEXT_OPT_MULTIR },
 };
 
 static const u8 optsAudioStr[][32] = {
@@ -134,6 +135,7 @@ static const u8 *vsyncChoices[] = {
     toggleStr[0],
     toggleStr[1],
     optsVideoStr[6],
+    optsVideoStr[10],
 };
 
 enum OptType {
