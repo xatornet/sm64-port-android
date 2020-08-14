@@ -15,6 +15,9 @@ VERSION ?= us
 # Use touch controls
 TOUCH_CONTROLS ?= 1
 
+# Disable text-based save-files by default
+TEXTSAVES ?= 0
+
 # Enable extended options menu by default
 EXT_OPTIONS_MENU ?= 1
 
@@ -134,6 +137,10 @@ endif
 # Check for extended options menu option
 ifeq ($(EXT_OPTIONS_MENU),1)
   LOCAL_CFLAGS += -DEXT_OPTIONS_MENU
+endif
+
+ifeq ($(TEXTSAVES),1)
+  LOCAL_CFLAGS += -DTEXTSAVES
 endif
 
 LOCAL_SRC_FILES := $(C_FILES) $(GENERATED_C_FILES) $(ULTRA_C_FILES) $(GODDARD_C_FILES) $(PC_BUILD_DIR)/sound/sound_data.ctl.c $(PC_BUILD_DIR)/sound/sound_data.tbl.c $(PC_BUILD_DIR)/sound/sequences.bin.c $(PC_BUILD_DIR)/sound/bank_sets.c
