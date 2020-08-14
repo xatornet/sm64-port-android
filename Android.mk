@@ -21,6 +21,10 @@ TEXTSAVES ?= 0
 # Enable extended options menu by default
 EXT_OPTIONS_MENU ?= 1
 
+# Load resources from external files
+EXTERNAL_DATA ?= 0
+BASEDIR ?= res
+
 ifeq ($(VERSION),jp)
   VERSION_DEF := VERSION_JP
 else
@@ -141,6 +145,10 @@ endif
 
 ifeq ($(TEXTSAVES),1)
   LOCAL_CFLAGS += -DTEXTSAVES
+endif
+
+ifeq ($(EXTERNAL_DATA),1)
+  LOCAL_CFLAGS += -DEXTERNAL_DATA -DFS_BASEDIR="\"$(BASEDIR)\""
 endif
 
 LOCAL_SRC_FILES := $(C_FILES) $(GENERATED_C_FILES) $(ULTRA_C_FILES) $(GODDARD_C_FILES) $(PC_BUILD_DIR)/sound/sound_data.ctl.c $(PC_BUILD_DIR)/sound/sound_data.tbl.c $(PC_BUILD_DIR)/sound/sequences.bin.c $(PC_BUILD_DIR)/sound/bank_sets.c
