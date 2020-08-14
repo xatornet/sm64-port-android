@@ -23,6 +23,8 @@ TARGET_N64 ?= 0
 TARGET_WEB ?= 0
 # Compiler to use (ido or gcc)
 COMPILER ?= ido
+# TOUCH CONTROLS
+TOUCH_CONTROLS ?= 1
 
 # Automatic settings only for ports
 ifeq ($(TARGET_N64),0)
@@ -521,6 +523,10 @@ ifeq ($(ENABLE_DX12),1)
 endif
 
 GFX_CFLAGS += -DWIDESCREEN
+
+ifeq ($(TOUCH_CONTROLS),1)
+  GFX_CFLAGS += -DTOUCH_CONTROLS
+endif
 
 CC_CHECK := $(CC) -fsyntax-only -fsigned-char $(INCLUDE_CFLAGS) -Wall -Wextra -Wno-format-security -D_LANGUAGE_C $(VERSION_CFLAGS) $(MATCH_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) $(GRUCODE_CFLAGS)
 CFLAGS := $(OPT_FLAGS) $(INCLUDE_CFLAGS) -D_LANGUAGE_C $(VERSION_CFLAGS) $(MATCH_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) $(GRUCODE_CFLAGS) -fno-strict-aliasing -fwrapv
