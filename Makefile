@@ -359,7 +359,7 @@ SEG_FILES := $(SEGMENT_ELF_FILES) $(ACTOR_ELF_FILES) $(LEVEL_ELF_FILES)
 ##################### Compiler Options #######################
 INCLUDE_CFLAGS := -I include -I $(BUILD_DIR) -I $(BUILD_DIR)/include -I src -I .
 ifeq ($(TARGET_ANDROID),1)
-INCLUDE_CFLAGS += -I ../SDL/include
+INCLUDE_CFLAGS += -I SDL/include
 endif
 ENDIAN_BITWIDTH := $(BUILD_DIR)/endian-and-bitwidth
 
