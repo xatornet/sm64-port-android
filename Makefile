@@ -464,25 +464,20 @@ endif
 ifeq ($(TARGET_ANDROID),1)
   DUMMY != uname -m
   ifneq ($(shell uname -m | grep "i.86"),)
-    ARCH := x86
     ARCH_APK := x86
   else
   ifeq ($(shell uname -m),x86_64)
-    ARCH := x86_64
     ARCH_APK := x86_64
   else
   ifeq ($(shell getconf LONG_BIT),64)
-    ARCH := arm64
     ARCH_APK := arm64-v8a
   else
-    ARCH := arm
     ARCH_APK := armeabi-v7a
   endif
   endif
   endif
-  LIBPATH := ../ndk-libs/arch-$(ARCH)/usr/lib
   PLATFORM_CFLAGS  := -fPIC
-  PLATFORM_LDFLAGS := -Wl,-rpath,$(LIBPATH) -L./android/lib/$(ARCH_APK)/ -L$(LIBPATH) -shared
+  PLATFORM_LDFLAGS := -L./android/lib/$(ARCH_APK)/ -shared
 endif
 ifeq ($(TARGET_WEB),1)
   PLATFORM_CFLAGS  := -DTARGET_WEB
