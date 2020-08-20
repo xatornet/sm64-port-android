@@ -21,6 +21,7 @@
 *.so
 *.so.*
 *.dylib
+!android/**/*.so
 
 # Executables
 *.exe
