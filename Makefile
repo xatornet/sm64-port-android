@@ -34,8 +34,11 @@ ifeq ($(TARGET_N64),0)
     ifeq ($(OS),Windows_NT)
       TARGET_WINDOWS := 1
     else
-    ifneq ($(shell command -v termux-setup-storage),)
+    ifneq ($(shell which termux-setup-storage),)
       TARGET_ANDROID := 1
+      ifeq ($(shell dpkg -s apksigner | grep Version | sed "s/Version: //"),0.7-2)
+        OLD_APKSIGNER := 1
+      endif
     else
       # TODO: Detect Mac OS X, BSD, etc. For now, assume Linux
       TARGET_LINUX := 1
@@ -211,7 +214,8 @@ EXE := $(BUILD_DIR)/$(TARGET).exe
 else
 ifeq ($(TARGET_ANDROID),1)
 EXE := $(BUILD_DIR)/libmain.so
-APK := $(BUILD_DIR)/$(TARGET).apk
+APK := $(BUILD_DIR)/$(TARGET).unsigned.apk
+APK_SIGNED := $(BUILD_DIR)/$(TARGET).apk
 else
 EXE := $(BUILD_DIR)/$(TARGET)
 endif
@@ -569,7 +573,7 @@ ifeq ($(COMPARE),1)
 endif
 else
 ifeq ($(TARGET_ANDROID),1)
-all: $(APK)
+all: $(APK_SIGNED)
 else
 all: $(EXE)
 endif
@@ -864,10 +868,18 @@ $(APK): $(EXE) $(APK_FILES)
 	cp -r android $(BUILD_DIR) && \
 	cp $(EXE) $(BUILD_DIR)/android/lib/$(ARCH_APK)/ && \
 	cd $(BUILD_DIR)/android && \
-	zip -r ../$(TARGET).apk ./* && \
+	zip -r ../../../$@ ./* && \
 	cd ../../.. && \
-	rm -rf $(BUILD_DIR)/android && \
-	apksigner sign --cert certificate.pem --key key.pk8 $(APK)
+	rm -rf $(BUILD_DIR)/android
+
+ifeq ($(OLD_APKSIGNER),1)
+$(APK_SIGNED): $(APK)
+	apksigner $(BUILD_DIR)/keystore $< $@
+else
+$(APK_SIGNED): $(APK)
+	cp $< $@
+	apksigner sign --cert certificate.pem --key key.pk8 $@
+endif
 
 $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) android/lib/$(ARCH_APK)/libSDL2.so android/lib/$(ARCH_APK)/libhidapi.so
 	$(LD) -L $(BUILD_DIR) -o $@ $(O_FILES) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)

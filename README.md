@@ -4,7 +4,7 @@ If you want to compile on Android using [Termux](https://play.google.com/store/a
 
 **Install dependencies:**
 ```sh
-pkg install git wget make python getconf zip apksigner
+pkg install git wget make python getconf zip apksigner clang
 ```
 
 **Clone the repository:**
