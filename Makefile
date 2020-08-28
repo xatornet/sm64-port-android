@@ -34,8 +34,15 @@ ifeq ($(TARGET_N64),0)
     ifeq ($(OS),Windows_NT)
       TARGET_WINDOWS := 1
     else
+    ifneq ($(shell which termux-setup-storage),)
+      TARGET_ANDROID := 1
+      ifeq ($(shell dpkg -s apksigner | grep Version | sed "s/Version: //"),0.7-2)
+        OLD_APKSIGNER := 1
+      endif
+    else
       # TODO: Detect Mac OS X, BSD, etc. For now, assume Linux
       TARGET_LINUX := 1
+    endif
     endif
   endif
 
@@ -205,7 +212,13 @@ else
 ifeq ($(TARGET_WINDOWS),1)
 EXE := $(BUILD_DIR)/$(TARGET).exe
 else
+ifeq ($(TARGET_ANDROID),1)
+EXE := $(BUILD_DIR)/libmain.so
+APK := $(BUILD_DIR)/$(TARGET).unsigned.apk
+APK_SIGNED := $(BUILD_DIR)/$(TARGET).apk
+else
 EXE := $(BUILD_DIR)/$(TARGET)
+endif
 endif
 endif
 ROM := $(BUILD_DIR)/$(TARGET).z64
@@ -349,6 +362,9 @@ SEG_FILES := $(SEGMENT_ELF_FILES) $(ACTOR_ELF_FILES) $(LEVEL_ELF_FILES)
 
 ##################### Compiler Options #######################
 INCLUDE_CFLAGS := -I include -I $(BUILD_DIR) -I $(BUILD_DIR)/include -I src -I .
+ifeq ($(TARGET_ANDROID),1)
+INCLUDE_CFLAGS += -I SDL/include
+endif
 ENDIAN_BITWIDTH := $(BUILD_DIR)/endian-and-bitwidth
 
 ifeq ($(TARGET_N64),1)
@@ -449,6 +465,24 @@ ifeq ($(TARGET_LINUX),1)
   PLATFORM_CFLAGS  := -DTARGET_LINUX `pkg-config --cflags libusb-1.0`
   PLATFORM_LDFLAGS := -lm -lpthread `pkg-config --libs libusb-1.0` -lasound -lpulse -no-pie
 endif
+ifeq ($(TARGET_ANDROID),1)
+  DUMMY != uname -m
+  ifneq ($(shell uname -m | grep "i.86"),)
+    ARCH_APK := x86
+  else
+  ifeq ($(shell uname -m),x86_64)
+    ARCH_APK := x86_64
+  else
+  ifeq ($(shell getconf LONG_BIT),64)
+    ARCH_APK := arm64-v8a
+  else
+    ARCH_APK := armeabi-v7a
+  endif
+  endif
+  endif
+  PLATFORM_CFLAGS  := -fPIC
+  PLATFORM_LDFLAGS := -L./android/lib/$(ARCH_APK)/ -shared
+endif
 ifeq ($(TARGET_WEB),1)
   PLATFORM_CFLAGS  := -DTARGET_WEB
   PLATFORM_LDFLAGS := -lm -no-pie -s TOTAL_MEMORY=20MB -g4 --source-map-base http://localhost:8080/ -s "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain']"
@@ -468,6 +502,10 @@ ifeq ($(ENABLE_OPENGL),1)
     GFX_CFLAGS  += $(shell sdl2-config --cflags)
     GFX_LDFLAGS += -lGL $(shell sdl2-config --libs) -lX11 -lXrandr
   endif
+  ifeq ($(TARGET_ANDROID),1)
+    GFX_CFLAGS  += -DOPENGL_ES -DTOUCH_CONTROLS
+    GFX_LDFLAGS += -lhidapi -lSDL2 -lGLESv2
+  endif
   ifeq ($(TARGET_WEB),1)
     GFX_CFLAGS  += -s USE_SDL=2
     GFX_LDFLAGS += -lGL -lSDL2
@@ -485,7 +523,10 @@ endif
 GFX_CFLAGS += -DWIDESCREEN
 
 CC_CHECK := $(CC) -fsyntax-only -fsigned-char $(INCLUDE_CFLAGS) -Wall -Wextra -Wno-format-security -D_LANGUAGE_C $(VERSION_CFLAGS) $(MATCH_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) $(GRUCODE_CFLAGS)
-CFLAGS := $(OPT_FLAGS) $(INCLUDE_CFLAGS) -D_LANGUAGE_C $(VERSION_CFLAGS) $(MATCH_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) $(GRUCODE_CFLAGS) -fno-strict-aliasing -fwrapv -march=native
+CFLAGS := $(OPT_FLAGS) $(INCLUDE_CFLAGS) -D_LANGUAGE_C $(VERSION_CFLAGS) $(MATCH_CFLAGS) $(PLATFORM_CFLAGS) $(GFX_CFLAGS) $(GRUCODE_CFLAGS) -fno-strict-aliasing -fwrapv
+ifneq ($(TARGET_ANDROID),1)
+  CFLAGS += -march=native
+endif
 
 ASFLAGS := -I include -I $(BUILD_DIR) $(VERSION_ASFLAGS)
 
@@ -531,7 +572,11 @@ ifeq ($(COMPARE),1)
 	@$(SHA1SUM) -c $(TARGET).sha1 || (echo 'The build succeeded, but did not match the official ROM. This is expected if you are making changes to the game.\nTo silence this message, use "make COMPARE=0"'. && false)
 endif
 else
+ifeq ($(TARGET_ANDROID),1)
+all: $(APK_SIGNED)
+else
 all: $(EXE)
+endif
 endif
 
 clean:
@@ -816,8 +861,32 @@ $(BUILD_DIR)/$(TARGET).objdump: $(ELF)
 	$(OBJDUMP) -D $< > $@
 
 else
+ifeq ($(TARGET_ANDROID),1)
+APK_FILES := $(shell find android/ -type f)
+
+$(APK): $(EXE) $(APK_FILES)
+	cp -r android $(BUILD_DIR) && \
+	cp $(EXE) $(BUILD_DIR)/android/lib/$(ARCH_APK)/ && \
+	cd $(BUILD_DIR)/android && \
+	zip -r ../../../$@ ./* && \
+	cd ../../.. && \
+	rm -rf $(BUILD_DIR)/android
+
+ifeq ($(OLD_APKSIGNER),1)
+$(APK_SIGNED): $(APK)
+	apksigner $(BUILD_DIR)/keystore $< $@
+else
+$(APK_SIGNED): $(APK)
+	cp $< $@
+	apksigner sign --cert certificate.pem --key key.pk8 $@
+endif
+
+$(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) android/lib/$(ARCH_APK)/libSDL2.so android/lib/$(ARCH_APK)/libhidapi.so
+	$(LD) -L $(BUILD_DIR) -o $@ $(O_FILES) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)
+else
 $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES)
 	$(LD) -L $(BUILD_DIR) -o $@ $(O_FILES) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)
+endif
 endif
 
 

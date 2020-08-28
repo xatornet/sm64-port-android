@@ -21,6 +21,7 @@
 *.so
 *.so.*
 *.dylib
+!android/**/*.so
 
 # Executables
 *.exe
@@ -72,3 +73,6 @@ sm64config.txt
 !/sound/**/*custom*/**/*.aiff
 !/assets/**/*custom*.bin
 !/assets/**/*custom*/**/*.bin
+
+# SDL
+SDL/include
