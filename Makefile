@@ -505,7 +505,7 @@ ifeq ($(ENABLE_OPENGL),1)
     GFX_LDFLAGS += -lGL $(shell sdl2-config --libs) -lX11 -lXrandr
   endif
   ifeq ($(TARGET_ANDROID),1)
-    GFX_CFLAGS  += -DOPENGL_ES -DTOUCH_CONTROLS
+    GFX_CFLAGS  += -DUSE_GLES -DTOUCH_CONTROLS
     GFX_LDFLAGS += -lhidapi -lSDL2 -lGLESv2
   endif
   ifeq ($(TARGET_WEB),1)
