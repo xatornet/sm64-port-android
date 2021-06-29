@@ -729,21 +729,66 @@ $(ENDIAN_BITWIDTH): tools/determine-endian-bitwidth.c
 	@rm $@.dummy1
 	@rm $@.dummy2
 
-$(SOUND_BIN_DIR)/sound_data.ctl: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS) $(ENDIAN_BITWIDTH)
-	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl $(SOUND_BIN_DIR)/sound_data.tbl $(VERSION_CFLAGS) $$(cat $(ENDIAN_BITWIDTH))
+$(SOUND_BIN_DIR)/sound_data.ctl.be.64: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS)
+	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl.be.64 $(SOUND_BIN_DIR)/sound_data.tbl.be.64 $(VERSION_CFLAGS) --endian big --bitwidth 64
 
-$(SOUND_BIN_DIR)/sound_data.tbl: $(SOUND_BIN_DIR)/sound_data.ctl
+$(SOUND_BIN_DIR)/sound_data.ctl.be.32: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS)
+	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl.be.32 $(SOUND_BIN_DIR)/sound_data.tbl.be.32 $(VERSION_CFLAGS) --endian big --bitwidth 32
+
+$(SOUND_BIN_DIR)/sound_data.ctl.le.64: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS)
+	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl.le.64 $(SOUND_BIN_DIR)/sound_data.tbl.le.64 $(VERSION_CFLAGS) --endian little --bitwidth 64
+
+$(SOUND_BIN_DIR)/sound_data.ctl.le.32: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS)
+	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl.le.32 $(SOUND_BIN_DIR)/sound_data.tbl.le.32 $(VERSION_CFLAGS) --endian little --bitwidth 32
+
+$(SOUND_BIN_DIR)/sound_data.tbl.be.64: $(SOUND_BIN_DIR)/sound_data.ctl.be.64
+	@true
+
+$(SOUND_BIN_DIR)/sound_data.tbl.be.32: $(SOUND_BIN_DIR)/sound_data.ctl.be.32
+	@true
+
+$(SOUND_BIN_DIR)/sound_data.tbl.le.64: $(SOUND_BIN_DIR)/sound_data.ctl.le.64
+	@true
+
+$(SOUND_BIN_DIR)/sound_data.tbl.le.32: $(SOUND_BIN_DIR)/sound_data.ctl.le.32
 	@true
 
 ifeq ($(VERSION),sh)
-$(SOUND_BIN_DIR)/sequences.bin: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES) $(ENDIAN_BITWIDTH)
-	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) $$(cat $(ENDIAN_BITWIDTH))
+$(SOUND_BIN_DIR)/sequences.bin.be.64: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.be.64 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian big --bitwidth 64
+
+$(SOUND_BIN_DIR)/sequences.bin.be.32: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.be.32 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian big --bitwidth 32
+
+$(SOUND_BIN_DIR)/sequences.bin.le.64: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.le.64 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian little --bitwidth 64
+
+$(SOUND_BIN_DIR)/sequences.bin.le.32: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.le.32 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian little --bitwidth 32
 else
-$(SOUND_BIN_DIR)/sequences.bin: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES) $(ENDIAN_BITWIDTH)
-	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) $$(cat $(ENDIAN_BITWIDTH))
+$(SOUND_BIN_DIR)/sequences.bin.be.64: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.be.64 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian big --bitwidth 64
+
+$(SOUND_BIN_DIR)/sequences.bin.be.32: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.be.32 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian big --bitwidth 32
+
+$(SOUND_BIN_DIR)/sequences.bin.le.64: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.le.64 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian little --bitwidth 64
+
+$(SOUND_BIN_DIR)/sequences.bin.le.32: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.le.32 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian little --bitwidth 32
 endif
 
-$(SOUND_BIN_DIR)/bank_sets: $(SOUND_BIN_DIR)/sequences.bin
+$(SOUND_BIN_DIR)/bank_sets.be.64: $(SOUND_BIN_DIR)/sequences.bin.be.64
+	@true
+
+$(SOUND_BIN_DIR)/bank_sets.be.32: $(SOUND_BIN_DIR)/sequences.bin.be.32
+	@true
+
+$(SOUND_BIN_DIR)/bank_sets.le.64: $(SOUND_BIN_DIR)/sequences.bin.le.64
+	@true
+
+$(SOUND_BIN_DIR)/bank_sets.le.32: $(SOUND_BIN_DIR)/sequences.bin.le.32
 	@true
 
 $(SOUND_BIN_DIR)/%.m64: $(SOUND_BIN_DIR)/%.o
@@ -756,7 +801,11 @@ $(SOUND_BIN_DIR)/%.inc.c: $(SOUND_BIN_DIR)/%
 	hexdump -v -e '1/1 "0x%X,"' $< > $@
 	echo >> $@
 
-$(SOUND_BIN_DIR)/sound_data.o: $(SOUND_BIN_DIR)/sound_data.ctl.inc.c $(SOUND_BIN_DIR)/sound_data.tbl.inc.c $(SOUND_BIN_DIR)/sequences.bin.inc.c $(SOUND_BIN_DIR)/bank_sets.inc.c
+$(SOUND_BIN_DIR)/sound_data.o: \
+	$(SOUND_BIN_DIR)/sound_data.ctl.be.64.inc.c $(SOUND_BIN_DIR)/sound_data.tbl.be.64.inc.c $(SOUND_BIN_DIR)/sequences.bin.be.64.inc.c $(SOUND_BIN_DIR)/bank_sets.be.64.inc.c \
+	$(SOUND_BIN_DIR)/sound_data.ctl.be.32.inc.c $(SOUND_BIN_DIR)/sound_data.tbl.be.32.inc.c $(SOUND_BIN_DIR)/sequences.bin.be.32.inc.c $(SOUND_BIN_DIR)/bank_sets.be.32.inc.c \
+	$(SOUND_BIN_DIR)/sound_data.ctl.le.64.inc.c $(SOUND_BIN_DIR)/sound_data.tbl.le.64.inc.c $(SOUND_BIN_DIR)/sequences.bin.le.64.inc.c $(SOUND_BIN_DIR)/bank_sets.le.64.inc.c \
+	$(SOUND_BIN_DIR)/sound_data.ctl.le.32.inc.c $(SOUND_BIN_DIR)/sound_data.tbl.le.32.inc.c $(SOUND_BIN_DIR)/sequences.bin.le.32.inc.c $(SOUND_BIN_DIR)/bank_sets.le.32.inc.c
 
 $(BUILD_DIR)/levels/scripts.o: $(BUILD_DIR)/include/level_headers.h
 
