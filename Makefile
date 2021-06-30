@@ -801,10 +801,22 @@ res: $(BASEPACK_PATH)
 $(BASEPACK_LST): $(EXE_DEPEND)
 	@mkdir -p $(BUILD_DIR)/$(BASEDIR)
 	@echo -n > $(BASEPACK_LST)
-	@echo "$(BUILD_DIR)/sound/bank_sets sound/bank_sets" >> $(BASEPACK_LST)
-	@echo "$(BUILD_DIR)/sound/sequences.bin sound/sequences.bin" >> $(BASEPACK_LST)
-	@echo "$(BUILD_DIR)/sound/sound_data.ctl sound/sound_data.ctl" >> $(BASEPACK_LST)
-	@echo "$(BUILD_DIR)/sound/sound_data.tbl sound/sound_data.tbl" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/bank_sets.be.64 sound/bank_sets.be.64" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/bank_sets.be.32 sound/bank_sets.be.32" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/bank_sets.le.64 sound/bank_sets.le.64" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/bank_sets.le.32 sound/bank_sets.le.32" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sequences.bin.be.64 sound/sequences.bin.be.64" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sequences.bin.be.32 sound/sequences.bin.be.32" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sequences.bin.le.64 sound/sequences.bin.le.64" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sequences.bin.le.32 sound/sequences.bin.le.32" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sound_data.ctl.be.64 sound/sound_data.ctl.be.64" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sound_data.ctl.be.32 sound/sound_data.ctl.be.32" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sound_data.ctl.le.64 sound/sound_data.ctl.le.64" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sound_data.ctl.le.32 sound/sound_data.ctl.le.32" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sound_data.tbl.be.64 sound/sound_data.tbl.be.64" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sound_data.tbl.be.32 sound/sound_data.tbl.be.32" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sound_data.tbl.le.64 sound/sound_data.tbl.le.64" >> $(BASEPACK_LST)
+	@echo "$(BUILD_DIR)/sound/sound_data.tbl.le.32 sound/sound_data.tbl.le.32" >> $(BASEPACK_LST)
 	@$(foreach f, $(wildcard $(SKYTILE_DIR)/*), echo $(f) gfx/$(f:$(BUILD_DIR)/%=%) >> $(BASEPACK_LST);)
 	@find actors -name \*.png -exec echo "{} gfx/{}" >> $(BASEPACK_LST) \;
 	@find levels -name \*.png -exec echo "{} gfx/{}" >> $(BASEPACK_LST) \;
@@ -959,21 +971,65 @@ $(ENDIAN_BITWIDTH): tools/determine-endian-bitwidth.c
 	@rm $@.dummy1
 	@rm $@.dummy2
 
-$(SOUND_BIN_DIR)/sound_data.ctl: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS) $(ENDIAN_BITWIDTH)
-	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl $(SOUND_BIN_DIR)/sound_data.tbl $(VERSION_CFLAGS) $$(cat $(ENDIAN_BITWIDTH))
+$(SOUND_BIN_DIR)/sound_data.ctl.be.64: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS)
+	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl.be.64 $(SOUND_BIN_DIR)/sound_data.tbl.be.64 $(VERSION_CFLAGS) --endian big --bitwidth 64
 
-$(SOUND_BIN_DIR)/sound_data.tbl: $(SOUND_BIN_DIR)/sound_data.ctl
+$(SOUND_BIN_DIR)/sound_data.ctl.be.32: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS)
+	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl.be.32 $(SOUND_BIN_DIR)/sound_data.tbl.be.32 $(VERSION_CFLAGS) --endian big --bitwidth 32
+
+$(SOUND_BIN_DIR)/sound_data.ctl.le.64: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS)
+	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl.le.64 $(SOUND_BIN_DIR)/sound_data.tbl.le.64 $(VERSION_CFLAGS) --endian little --bitwidth 64
+
+$(SOUND_BIN_DIR)/sound_data.ctl.le.32: sound/sound_banks/ $(SOUND_BANK_FILES) $(SOUND_SAMPLE_AIFCS)
+	$(PYTHON) tools/assemble_sound.py $(BUILD_DIR)/sound/samples/ sound/sound_banks/ $(SOUND_BIN_DIR)/sound_data.ctl.le.32 $(SOUND_BIN_DIR)/sound_data.tbl.le.32 $(VERSION_CFLAGS) --endian little --bitwidth 32
+
+$(SOUND_BIN_DIR)/sound_data.tbl.be.64: $(SOUND_BIN_DIR)/sound_data.ctl.be.64
 	@true
 
+$(SOUND_BIN_DIR)/sound_data.tbl.be.32: $(SOUND_BIN_DIR)/sound_data.ctl.be.32
+	@true
+
+$(SOUND_BIN_DIR)/sound_data.tbl.le.64: $(SOUND_BIN_DIR)/sound_data.ctl.le.64
+	@true
+
+$(SOUND_BIN_DIR)/sound_data.tbl.le.32: $(SOUND_BIN_DIR)/sound_data.ctl.le.32
+
 ifeq ($(VERSION),sh)
-$(SOUND_BIN_DIR)/sequences.bin: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES) $(ENDIAN_BITWIDTH)
-	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) $$(cat $(ENDIAN_BITWIDTH))
+$(SOUND_BIN_DIR)/sequences.bin.be.64: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.be.64 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian big --bitwidth 64
+
+$(SOUND_BIN_DIR)/sequences.bin.be.32: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.be.32 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian big --bitwidth 32
+
+$(SOUND_BIN_DIR)/sequences.bin.le.64: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.le.64 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian little --bitwidth 64
+
+$(SOUND_BIN_DIR)/sequences.bin.le.32: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/jp/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.le.32 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian little --bitwidth 32
 else
-$(SOUND_BIN_DIR)/sequences.bin: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES) $(ENDIAN_BITWIDTH)
-	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) $$(cat $(ENDIAN_BITWIDTH))
+$(SOUND_BIN_DIR)/sequences.bin.be.64: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.be.64 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian big --bitwidth 64
+
+$(SOUND_BIN_DIR)/sequences.bin.be.32: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.be.32 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian big --bitwidth 32
+
+$(SOUND_BIN_DIR)/sequences.bin.le.64: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.le.64 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian little --bitwidth 64
+
+$(SOUND_BIN_DIR)/sequences.bin.le.32: $(SOUND_BANK_FILES) sound/sequences.json sound/sequences/ sound/sequences/$(VERSION)/ $(SOUND_SEQUENCE_FILES)
+	$(PYTHON) tools/assemble_sound.py --sequences $@ $(SOUND_BIN_DIR)/bank_sets.le.32 sound/sound_banks/ sound/sequences.json $(SOUND_SEQUENCE_FILES) $(VERSION_CFLAGS) --endian little --bitwidth 32
 endif
 
-$(SOUND_BIN_DIR)/bank_sets: $(SOUND_BIN_DIR)/sequences.bin
+$(SOUND_BIN_DIR)/bank_sets.be.64: $(SOUND_BIN_DIR)/sequences.bin.be.64
+	@true
+
+$(SOUND_BIN_DIR)/bank_sets.be.32: $(SOUND_BIN_DIR)/sequences.bin.be.32
+	@true
+
+$(SOUND_BIN_DIR)/bank_sets.le.64: $(SOUND_BIN_DIR)/sequences.bin.le.64
+	@true
+
+$(SOUND_BIN_DIR)/bank_sets.le.32: $(SOUND_BIN_DIR)/sequences.bin.le.32
 	@true
 
 $(SOUND_BIN_DIR)/%.m64: $(SOUND_BIN_DIR)/%.o
@@ -984,35 +1040,123 @@ $(SOUND_BIN_DIR)/%.o: $(SOUND_BIN_DIR)/%.s
 
 ifeq ($(EXTERNAL_DATA),1)
 
-$(SOUND_BIN_DIR)/sound_data.ctl.c: $(SOUND_BIN_DIR)/sound_data.ctl
-	echo "unsigned char gSoundDataADSR[] = \"sound/sound_data.ctl\";" > $@
-$(SOUND_BIN_DIR)/sound_data.tbl.c: $(SOUND_BIN_DIR)/sound_data.tbl
-	echo "unsigned char gSoundDataRaw[] = \"sound/sound_data.tbl\";" > $@
-$(SOUND_BIN_DIR)/sequences.bin.c: $(SOUND_BIN_DIR)/sequences.bin
-	echo "unsigned char gMusicData[] = \"sound/sequences.bin\";" > $@
-$(SOUND_BIN_DIR)/bank_sets.c: $(SOUND_BIN_DIR)/bank_sets
-	echo "unsigned char gBankSetsData[] = \"sound/bank_sets\";" > $@
+$(SOUND_BIN_DIR)/sound_data.ctl.c: $(SOUND_BIN_DIR)/sound_data.ctl.be.64 $(SOUND_BIN_DIR)/sound_data.ctl.be.32 $(SOUND_BIN_DIR)/sound_data.ctl.le.64 $(SOUND_BIN_DIR)/sound_data.ctl.le.32
+	echo "#include \"platform_info.h\"" > $@
+	echo "#if IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	echo "unsigned char gSoundDataADSR[] = \"sound/sound_data.ctl.be.64\";" >> $@
+	echo "#elif IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	echo "unsigned char gSoundDataADSR[] = \"sound/sound_data.ctl.be.32\";" >> $@
+	echo "#elif !IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	echo "unsigned char gSoundDataADSR[] = \"sound/sound_data.ctl.le.64\";" >> $@
+	echo "#elif !IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	echo "unsigned char gSoundDataADSR[] = \"sound/sound_data.ctl.le.32\";" >> $@
+	echo "#endif" >> $@
+$(SOUND_BIN_DIR)/sound_data.tbl.c: $(SOUND_BIN_DIR)/sound_data.tbl.be.64 $(SOUND_BIN_DIR)/sound_data.tbl.be.32 $(SOUND_BIN_DIR)/sound_data.tbl.le.64 $(SOUND_BIN_DIR)/sound_data.tbl.le.32
+	echo "#include \"platform_info.h\"" > $@
+	echo "#if IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	echo "unsigned char gSoundDataRaw[] = \"sound/sound_data.tbl.be.64\";" >> $@
+	echo "#elif IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	echo "unsigned char gSoundDataRaw[] = \"sound/sound_data.tbl.be.32\";" >> $@
+	echo "#elif !IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	echo "unsigned char gSoundDataRaw[] = \"sound/sound_data.tbl.le.64\";" >> $@
+	echo "#elif !IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	echo "unsigned char gSoundDataRaw[] = \"sound/sound_data.tbl.le.32\";" >> $@
+	echo "#endif" >> $@
+$(SOUND_BIN_DIR)/sequences.bin.c: $(SOUND_BIN_DIR)/sequences.bin.be.64 $(SOUND_BIN_DIR)/sequences.bin.be.32 $(SOUND_BIN_DIR)/sequences.bin.le.64 $(SOUND_BIN_DIR)/sequences.bin.le.32
+	echo "#include \"platform_info.h\"" > $@
+	echo "#if IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	echo "unsigned char gMusicData[] = \"sound/sequences.bin.be.64\";" >> $@
+	echo "#elif IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	echo "unsigned char gMusicData[] = \"sound/sequences.bin.be.32\";" >> $@
+	echo "#elif !IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	echo "unsigned char gMusicData[] = \"sound/sequences.bin.le.64\";" >> $@
+	echo "#elif !IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	echo "unsigned char gMusicData[] = \"sound/sequences.bin.le.32\";" >> $@
+	echo "#endif" >> $@
+$(SOUND_BIN_DIR)/bank_sets.c: $(SOUND_BIN_DIR)/bank_sets.be.64 $(SOUND_BIN_DIR)/bank_sets.be.32 $(SOUND_BIN_DIR)/bank_sets.le.64 $(SOUND_BIN_DIR)/bank_sets.le.32
+	echo "#include \"platform_info.h\"" > $@
+	echo "#if IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	echo "unsigned char gBankSetsData[] = \"sound/bank_sets.be.64\";" >> $@
+	echo "#elif IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	echo "unsigned char gBankSetsData[] = \"sound/bank_sets.be.32\";" >> $@
+	echo "#elif !IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	echo "unsigned char gBankSetsData[] = \"sound/bank_sets.le.64\";" >> $@
+	echo "#elif !IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	echo "unsigned char gBankSetsData[] = \"sound/bank_sets.le.32\";" >> $@
+	echo "#endif" >> $@
 
 else
 
-$(SOUND_BIN_DIR)/sound_data.ctl.c: $(SOUND_BIN_DIR)/sound_data.ctl
-	echo "unsigned char gSoundDataADSR[] = {" > $@
-	hexdump -v -e '1/1 "0x%X,"' $< >> $@
+$(SOUND_BIN_DIR)/sound_data.ctl.c: $(SOUND_BIN_DIR)/sound_data.ctl.be.64 $(SOUND_BIN_DIR)/sound_data.ctl.be.32 $(SOUND_BIN_DIR)/sound_data.ctl.le.64 $(SOUND_BIN_DIR)/sound_data.ctl.le.32
+	echo "#include \"platform_info.h\"" > $@
+	echo "unsigned char gSoundDataADSR[] = {" >> $@
+	echo "#if IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sound_data.ctl.be.64 >> $@
+	echo >> $@
+	echo "#elif IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sound_data.ctl.be.32 >> $@
+	echo >> $@
+	echo "#elif !IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sound_data.ctl.le.64 >> $@
+	echo >> $@
+	echo "#elif !IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sound_data.ctl.le.32 >> $@
+	echo >> $@
+	echo "#endif" >> $@
 	echo "};" >> $@
 
-$(SOUND_BIN_DIR)/sound_data.tbl.c: $(SOUND_BIN_DIR)/sound_data.tbl
-	echo "unsigned char gSoundDataRaw[] = {" > $@
-	hexdump -v -e '1/1 "0x%X,"' $< >> $@
+$(SOUND_BIN_DIR)/sound_data.tbl.c: $(SOUND_BIN_DIR)/sound_data.tbl.be.64 $(SOUND_BIN_DIR)/sound_data.tbl.be.32 $(SOUND_BIN_DIR)/sound_data.tbl.le.64 $(SOUND_BIN_DIR)/sound_data.tbl.le.32
+	echo "#include \"platform_info.h\"" > $@
+	echo "unsigned char gSoundDataRaw[] = {" >> $@
+	echo "#if IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sound_data.tbl.be.64 >> $@
+	echo >> $@
+	echo "#elif IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sound_data.tbl.be.32 >> $@
+	echo >> $@
+	echo "#elif !IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sound_data.tbl.le.64 >> $@
+	echo >> $@
+	echo "#elif !IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sound_data.tbl.le.32 >> $@
+	echo >> $@
+	echo "#endif" >> $@
 	echo "};" >> $@
 
-$(SOUND_BIN_DIR)/sequences.bin.c: $(SOUND_BIN_DIR)/sequences.bin
-	echo "unsigned char gMusicData[] = {" > $@
-	hexdump -v -e '1/1 "0x%X,"' $< >> $@
+$(SOUND_BIN_DIR)/sequences.bin.c: $(SOUND_BIN_DIR)/sequences.bin.be.64 $(SOUND_BIN_DIR)/sequences.bin.be.32 $(SOUND_BIN_DIR)/sequences.bin.le.64 $(SOUND_BIN_DIR)/sequences.bin.le.32
+	echo "#include \"platform_info.h\"" > $@
+	echo "unsigned char gMusicData[] = {" >> $@
+	echo "#if IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sequences.bin.be.64 >> $@
+	echo >> $@
+	echo "#elif IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sequences.bin.be.32 >> $@
+	echo >> $@
+	echo "#elif !IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sequences.bin.le.64 >> $@
+	echo >> $@
+	echo "#elif !IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/sequences.bin.le.32 >> $@
+	echo >> $@
+	echo "#endif" >> $@
 	echo "};" >> $@
 
-$(SOUND_BIN_DIR)/bank_sets.c: $(SOUND_BIN_DIR)/bank_sets
-	echo "unsigned char gBankSetsData[0x100] = {" > $@
-	hexdump -v -e '1/1 "0x%X,"' $< >> $@
+$(SOUND_BIN_DIR)/bank_sets.c: $(SOUND_BIN_DIR)/bank_sets.be.64 $(SOUND_BIN_DIR)/bank_sets.be.32 $(SOUND_BIN_DIR)/bank_sets.le.64 $(SOUND_BIN_DIR)/bank_sets.le.32
+	echo "#include \"platform_info.h\"" > $@
+	echo "unsigned char gBankSetsData[0x100] = {" >> $@
+	echo "#if IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/bank_sets.be.64 >> $@
+	echo >> $@
+	echo "#elif IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/bank_sets.be.32 >> $@
+	echo >> $@
+	echo "#elif !IS_BIG_ENDIAN && IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/bank_sets.le.64 >> $@
+	echo >> $@
+	echo "#elif !IS_BIG_ENDIAN && !IS_64_BIT" >> $@
+	hexdump -v -e '1/1 "0x%X,"' $(SOUND_BIN_DIR)/bank_sets.le.32 >> $@
+	echo >> $@
+	echo "#endif" >> $@
 	echo "};" >> $@
 
 endif
