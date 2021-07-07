@@ -141,7 +141,60 @@ static void on_fullscreen_changed(bool is_now_fullscreen) {
     configFullscreen = is_now_fullscreen;
 }
 
+#ifdef __ANDROID__
+extern const char* SDL_AndroidGetInternalStoragePath();
+extern const char* SDL_AndroidGetExternalStoragePath();
+extern int errno;
+
+//From sm64ex
+bool fs_sys_copy_file(const char *oldname, const char *newname) {
+    uint8_t buf[2048];
+
+    FILE *fin = fopen(oldname, "rb");
+    if (!fin) return false;
+
+    FILE *fout = fopen(newname, "wb");
+    if (!fout) {
+        fclose(fin);
+        return false;
+    }
+
+    bool ret = true;
+    size_t rx;
+    while ((rx = fread(buf, 1, sizeof(buf), fin)) > 0) {
+        if (!fwrite(buf, rx, 1, fout)) {
+            ret = false;
+            break;
+        }
+    }
+
+    fclose(fout);
+    fclose(fin);
+
+    return ret;
+}
+
+void move_save_to_new_dir() {
+    char userdir[256];
+    snprintf(userdir, sizeof(userdir), "%s/user", SDL_AndroidGetExternalStoragePath());
+    if (stat(userdir, NULL) == -1) {
+        mkdir(userdir, 0770);
+    }
+    char original_loc[256];
+    char new_loc[256];
+    snprintf(original_loc, sizeof(original_loc), "%s/sm64_save_file.bin", SDL_AndroidGetInternalStoragePath());
+    snprintf(new_loc, sizeof(new_loc), "%s/user/sm64_save_file.bin", SDL_AndroidGetExternalStoragePath());
+    //Detecting if the new file exists doesn't work, so let's just delete the old one and let the copy fail.
+    //Moving the file with rename is broken as well
+    fs_sys_copy_file(original_loc, new_loc);
+    remove(original_loc);
+}
+#endif
+
 void main_func(void) {
+#ifdef __ANDROID__
+    move_save_to_new_dir();
+#endif
 #ifdef USE_SYSTEM_MALLOC
     main_pool_init();
     gGfxAllocOnlyPool = alloc_only_pool_init();

@@ -152,8 +152,8 @@ s32 osEepromLongRead(UNUSED OSMesgQueue *mq, u8 address, u8 *buffer, int nbytes)
 #else
 #ifdef __ANDROID__    
     char filePath [255];
-    strcpy(filePath, SDL_AndroidGetInternalStoragePath());
-    strcat(filePath, "/sm64_save_file.bin");
+    strcpy(filePath, SDL_AndroidGetExternalStoragePath());
+    strcat(filePath, "/user/sm64_save_file.bin");
     FILE *fp = fopen(filePath, "rb");
 #else
     FILE *fp = fopen("sm64_save_file.bin", "rb");
@@ -189,8 +189,8 @@ s32 osEepromLongWrite(UNUSED OSMesgQueue *mq, u8 address, u8 *buffer, int nbytes
 #else
 #ifdef __ANDROID__    
     char filePath [255];
-    strcpy(filePath, SDL_AndroidGetInternalStoragePath());
-    strcat(filePath, "/sm64_save_file.bin");
+    strcpy(filePath, SDL_AndroidGetExternalStoragePath());
+    strcat(filePath, "/user/sm64_save_file.bin");
     FILE *fp = fopen(filePath, "wb");
 #else
     FILE* fp = fopen("sm64_save_file.bin", "wb");
