@@ -86,8 +86,38 @@ void sys_fatal(const char *fmt, ...) {
 
 
 #ifdef __ANDROID__
+#define SAVE_FILENAME "sm64_save_file.bin"
+#define CONFIGFILE_DEFAULT "sm64config.txt"
 extern const char* SDL_AndroidGetInternalStoragePath();
 extern const char* SDL_AndroidGetExternalStoragePath();
+
+//From nightly
+static bool fs_sys_copy_file(const char *oldname, const char *newname) {
+    uint8_t buf[2048];
+
+    FILE *fin = fopen(oldname, "rb");
+    if (!fin) return false;
+
+    FILE *fout = fopen(newname, "wb");
+    if (!fout) {
+        fclose(fin);
+        return false;
+    }
+
+    bool ret = true;
+    size_t rx;
+    while ((rx = fread(buf, 1, sizeof(buf), fin)) > 0) {
+        if (!fwrite(buf, rx, 1, fout)) {
+            ret = false;
+            break;
+        }
+    }
+
+    fclose(fout);
+    fclose(fin);
+
+    return ret;
+}
 
 static inline bool copy_userdata(const char *userdir) {
     char oldpath[SYS_MAX_PATH] = { 0 };
