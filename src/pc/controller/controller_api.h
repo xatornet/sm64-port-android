@@ -41,4 +41,11 @@ void controller_rumble_stop(void);
 // calls the shutdown() function of all controller subsystems
 void controller_shutdown(void);
 
+// Needed for autohide
+#define VK_INPUTTYPE_TOUCHSCREEN 0
+#define VK_INPUTTYPE_OTHER -1
+
+extern void set_current_input(int in);
+extern int get_current_input();
+
 #endif

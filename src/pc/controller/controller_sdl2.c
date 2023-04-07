@@ -260,6 +260,10 @@ static void controller_sdl_read(OSContPad *pad) {
         int stick_y = -righty / 0x100;
         pad->ext_stick_y = stick_y == 128 ? 127 : stick_y;
     }
+
+    if (last_joybutton != VK_INVALID) {
+        set_current_input(VK_INPUTTYPE_OTHER);
+    }
 }
 
 static void controller_sdl_rumble_play(f32 strength, f32 length) {

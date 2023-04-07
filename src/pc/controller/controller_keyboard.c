@@ -29,6 +29,7 @@ static int keyboard_map_scancode(int scancode) {
 }
 
 bool keyboard_on_key_down(int scancode) {
+    set_current_input(VK_INPUTTYPE_OTHER);
     int mapped = keyboard_map_scancode(scancode);
     keyboard_buttons_down |= mapped;
     keyboard_lastkey = scancode;
