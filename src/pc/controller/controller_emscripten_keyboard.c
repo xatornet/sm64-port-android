@@ -124,6 +124,7 @@ static EM_BOOL controller_emscripten_keyboard_handler(int event_type, const Emsc
     for (size_t i = 0; i < sizeof(keymap_browser) / sizeof(keymap_browser[0]); i++) {
         if (strcmp(key_event->code, keymap_browser[i].code) == 0) {
             if (event_type == EMSCRIPTEN_EVENT_KEYDOWN) {
+                set_current_input(VK_INPUTTYPE_OTHER);
                 return keyboard_on_key_down(keymap_browser[i].scancode);
             } else if (event_type == EMSCRIPTEN_EVENT_KEYUP) {
                 return keyboard_on_key_up(keymap_browser[i].scancode);
