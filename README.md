@@ -66,7 +66,7 @@ make TOUCH_CONTROLS=1 NODRAWINGDISTANCE=1 EXT_OPTIONS_MENU=1 EXTERNAL_DATA=1
 ```
 Now if you want to use this build, you have to add the base.zip to an external folder, as DynOS will need to read the content/resources externally.
 
-**Download base.zip manually from this repo, and put it inside this folder (You have to use a PC to do this, unless you're rooted):**
+**Download [base.zip](https://github.com/xatornet/sm64-port-android/blob/ex/nightly/base.zip) manually from this repo, and put it inside this folder (You have to use a PC to do this, unless you're rooted):**
 ```sh
 /sdcard/Android/data/com.vdavid003.sm64port/files/res
 ```
