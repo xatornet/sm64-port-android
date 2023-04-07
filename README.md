@@ -76,7 +76,7 @@ With this, you are ready to play SM64.
 
 If you have built a DynOS version of the game, or some version with EXTERNAL_DATA=1, you can use DynOS model packs, and/or Texture Packs.
 
-**To add DynOS model packs:**
++ To add DynOS model packs:
 
 Download them from [here](https://github.com/Render96/ModelPack/releases)
 
@@ -87,7 +87,7 @@ Then copy this folder manually from a PC to
 ```
 Now, open the game, an inside the DynOS menu, you should be able to select and enable the DynOS model pack.
 
-**To add Texture packs:**
++ To add Texture packs:
 
 Download your prefered texture pack.
 Then copy the zip/7z file manually from a PC to the same folder you already have the base.zip file:
