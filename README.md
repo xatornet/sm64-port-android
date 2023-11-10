@@ -4,7 +4,7 @@ Please, use Termux from GITHUB or F-Droid. Not from Google Play Store (obsolete)
 
 **Install dependencies:**
 ```sh
-pkg install git wget make python getconf zip apksigner clang binutils x11-repo mesa mesa-dev
+pkg install git wget make python getconf zip apksigner clang binutils x11-repo mesa mesa-dev SDL2
 ```
 **Update and Upgrade:**
 ```sh
