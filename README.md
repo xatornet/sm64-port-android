@@ -2,14 +2,15 @@
 
 Please, use Termux from GITHUB or F-Droid. Not from Google Play Store (obsolete)
 
-**Install dependencies:**
+**Install dependencies: (use this order or sdl2 won't install)**
 ```sh
-pkg install git wget make python getconf zip apksigner clang binutils x11-repo mesa mesa-dev SDL2
+pkg install x11-repo
+pkg install git wget which make python getconf zip apksigner clang binutils mesa mesa-dev sdl2
 ```
-**Update and Upgrade:**
+**Update and Upgrade: (input YES to everything)**
 ```sh
-apt-get update
-apt-get upgrade
+pkg update -y
+pkg upgrade -y
 ```
 
 **Clone the repository:**
@@ -24,11 +25,6 @@ Do this using your default file manager (on AOSP, you can slide on the left and 
 ```sh
 termux-setup-storage
 cp /sdcard/path/to/your/baserom.z64 ./baserom.us.z64
-```
-
-**Get SDL includes:**
-```sh
-./getSDL.sh
 ```
 
 **Build:**
